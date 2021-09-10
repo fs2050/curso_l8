@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-route::get('/posts', [PostController::class, 'index']);
+route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
+route::get('/posts', [PostController::class, 'index'])->name('posts.index');
 
 Route::get('/', function () {
     return view('welcome');
