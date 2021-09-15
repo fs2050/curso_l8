@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', 'Editar o post {$post->title}')
+@section('title', 'Editar o post:')
 
 @section('content')
 

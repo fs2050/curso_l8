@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Str;
 
+use Illuminate\Support\Facades\Storage;
+
 class PostController extends Controller
 {
     public function index()
@@ -31,10 +33,11 @@ class PostController extends Controller
     public function store(StoreUpdatePost $request)
     {
 
-         $data = $request->all();
+        $data = $request->all();
         if ($request->image->isValid()) {
-            $nameFile = Str::of($request->title)->slug('-') . '.' .$request->image->getClientOriginalExtension();
-            $image = $request->image->storeAs('posts', $nameFile);
+            $nameFile = Str::of($request->title)->slug('-') . '.' . $request->image->getClientOriginalExtension();
+            //dd()$image = $request->image->storeAs('posts', $nameFile);
+            $image = $request->image->store('posts', 'public');
             $data['image'] = $image;
         }
 
@@ -53,7 +56,7 @@ class PostController extends Controller
         $post = Post::find($id);
 
         if (!$post) {
-            return redirect()->route('post.index');
+            return redirect()->route('posts.index');
         }
         return view('admin.posts.show', compact('post'));
     }
@@ -63,6 +66,9 @@ class PostController extends Controller
     {
         if (!$post = Post::find($id))
             return redirect()->route('posts.index');
+
+        if (Storage::exists('public/' . $post->image))
+            Storage::delete('public/' . $post->image);
 
         $post->delete();
         return redirect()
@@ -90,9 +96,20 @@ class PostController extends Controller
             return redirect()->back();
         }
 
-        //dd("editando: {$post->id}");
+        $data = $request->all();
 
-        $post->update($request->all());
+        if ($request->image && $request->image->isValid()) {
+
+            if (Storage::exists('public/' . $post->image))
+                Storage::delete('public/' . $post->image);
+
+            $nameFile = Str::of($request->title)->slug('-') . '.' . $request->image->getClientOriginalExtension();
+            //$image = $request->image->storeAs('posts', $nameFile);
+            $image = $request->image->store('posts', 'public', $nameFile);
+            $data['image'] = $image;
+        }
+
+        $post->update($data);
 
         return redirect()
             ->route('posts.index')
